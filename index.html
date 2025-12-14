@@ -5,7 +5,7 @@
     <title>Menú | Cevichería del Pacífico</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Nunito -->
+    <!-- Google Font: Nunito -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -26,16 +26,18 @@
         }
 
         #viewer {
-            padding: 10px;
+            padding: 12px;
+            max-width: 900px;
+            margin: auto;
         }
 
         canvas {
             width: 100% !important;
             height: auto !important;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,.1);
             background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,.12);
         }
 
         .loader {
@@ -43,6 +45,13 @@
             margin-top: 40px;
             color: #555;
             font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 13px;
+            color: #777;
+            padding: 10px;
         }
     </style>
 </head>
@@ -53,40 +62,54 @@
 </header>
 
 <div id="viewer">
-    <div class="loader">Cargando menú...</div>
+    <div class="loader">Cargando menú…</div>
 </div>
 
-<!-- PDF.js -->
-<script src="pdfjs/pdf.js"></script>
-<script>
-    const url = 'Menu.pdf';
+<footer>
+    © Cevichería del Pacífico
+</footer>
+
+<!-- PDF.js MODERNO -->
+<script type="module">
+    import * as pdfjsLib from './pdfjs/pdf.min.mjs';
+
+    const url = './menu.pdf';
     const container = document.getElementById('viewer');
 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        './pdfjs/pdf.worker.min.mjs';
 
-    pdfjsLib.getDocument(url).promise.then(pdf => {
-        container.innerHTML = '';
+    pdfjsLib.getDocument(url).promise
+        .then(pdf => {
+            container.innerHTML = '';
 
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            pdf.getPage(pageNum).then(page => {
-                const scale = window.innerWidth < 768 ? 1.2 : 1.5;
-                const viewport = page.getViewport({ scale });
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                pdf.getPage(pageNum).then(page => {
+                    const scale = window.innerWidth < 768 ? 1.2 : 1.5;
+                    const viewport = page.getViewport({ scale });
 
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
 
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
 
-                container.appendChild(canvas);
+                    container.appendChild(canvas);
 
-                page.render({
-                    canvasContext: context,
-                    viewport: viewport
+                    page.render({
+                        canvasContext: context,
+                        viewport
+                    });
                 });
-            });
-        }
-    });
+            }
+        })
+        .catch(err => {
+            container.innerHTML = `
+                <p style="text-align:center;color:#c00;font-weight:600">
+                    Error al cargar el menú
+                </p>`;
+            console.error(err);
+        });
 </script>
 
 </body>
