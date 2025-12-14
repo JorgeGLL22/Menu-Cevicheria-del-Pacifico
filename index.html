@@ -2,44 +2,92 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <title>Menú | Cevichería del Pacífico</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú</title>
+
+    <!-- Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+        body {
+            margin: 0;
+            font-family: 'Nunito', sans-serif;
+            background: #f4f6f8;
+        }
 
-    body {
-        margin: 0;
-        font-family: 'Nunito', sans-serif;
-        background-color: #f4f6f8;
-    }
+        header {
+            background: #12578E;
+            color: #fff;
+            text-align: center;
+            padding: 14px;
+            font-size: 20px;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0,0,0,.2);
+        }
 
-    header {
-        background-color: #12578E;
-        color: #ffffff;
-        padding: 16px;
-        text-align: center;
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
+        #viewer {
+            padding: 10px;
+        }
 
-    iframe {
-        width: 100%;
-        height: calc(100vh - 70px);
-        border: none;
-        background-color: #ffffff;
-    }
-</style>
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.1);
+            background: #fff;
+        }
+
+        .loader {
+            text-align: center;
+            margin-top: 40px;
+            color: #555;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
 
 <header>
-    Menú Cevicheria del Pacífico
+    Cevichería del Pacífico
 </header>
 
-<iframe src="Menu.pdf"></iframe>
+<div id="viewer">
+    <div class="loader">Cargando menú...</div>
+</div>
+
+<!-- PDF.js -->
+<script src="pdfjs/pdf.js"></script>
+<script>
+    const url = 'Menu.pdf';
+    const container = document.getElementById('viewer');
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
+
+    pdfjsLib.getDocument(url).promise.then(pdf => {
+        container.innerHTML = '';
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            pdf.getPage(pageNum).then(page => {
+                const scale = window.innerWidth < 768 ? 1.2 : 1.5;
+                const viewport = page.getViewport({ scale });
+
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                container.appendChild(canvas);
+
+                page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                });
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
